@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ElevenStudio AI - Hindi & Hinglish Voice Generator</title>
+  <style>
+    :root {
+      --bg: #0b0c10;
+      --card: #14161d;
+      --border: #262936;
+      --accent: #ffffff;
+      --primary: #6366f1;
+      --text: #f3f4f6;
+      --muted: #9ca3af;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 16px; min-height: 100vh; display: flex; justify-content: center; }
+    .container { width: 100%; max-width: 600px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .logo { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px; }
+    .badge { font-size: 0.7rem; background: #1f2937; color: #34d399; padding: 4px 8px; border-radius: 99px; border: 1px solid #059669; }
+    label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; margin-top: 14px; }
+    input, select, textarea { width: 100%; background: #0f1117; border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 10px; font-size: 0.92rem; outline: none; transition: border 0.2s; }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    textarea { resize: vertical; min-height: 150px; line-height: 1.5; }
+    .counter { text-align: right; font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+    .btn { width: 100%; background: var(--accent); color: #000; font-weight: 700; border: none; padding: 14px; border-radius: 10px; font-size: 0.95rem; cursor: pointer; margin-top: 16px; transition: opacity 0.2s; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .status { margin-top: 14px; font-size: 0.85rem; text-align: center; color: #fbbf24; display: none; }
+    .output-box { margin-top: 20px; padding: 16px; background: #0f1117; border: 1px solid var(--border); border-radius: 12px; display: none; }
+    audio { width: 100%; margin-bottom: 12px; }
+    .download-btn { display: block; width: 100%; text-align: center; background: var(--primary); color: #fff; text-decoration: none; padding: 12px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="logo">⚡ ElevenStudio AI</div>
+    <span class="badge">Free Gemini TTS</span>
+  </div>
+
+  <!-- API Key Box (Auto saves in browser) -->
+  <label>1. Google AI Studio API Key (Ekbar dilei save thakbe)</label>
+  <input type="password" id="apiKey" placeholder="Paste your AIzaSy... key here" />
+
+  <div class="row">
+    <div>
+      <label>2. Select Voice</label>
+      <select id="voiceName">
+        <option value="Puck">Puck (Energetic Male - Shorts)</option>
+        <option value="Charon">Charon (Deep Male - Dark/Power)</option>
+        <option value="Fenrir">Fenrir (Bold Male - Storyteller)</option>
+        <option value="Kore">Kore (Warm Female - Explainer)</option>
+        <option value="Aoede">Aoede (Expressive Female)</option>
+      </select>
+    </div>
+    <div>
+      <label>3. Emotion / Tone Style</label>
+      <select id="emotionStyle">
+        <option value="in a high-energy, engaging YouTube Shorts narrator tone with natural Hindi pronunciation and crisp English words">🔥 High-Energy Shorts</option>
+        <option value="in a deep, mysterious, suspenseful storytelling tone with dramatic pauses">🕵️ Dark & Suspenseful</option>
+        <option value="in a friendly, conversational best-friend tone with natural expressions">😄 Funny / Casual Friend</option>
+        <option value="in a clear, curious science explainer tone with natural emphasis">🧠 Science Explainer</option>
+      </select>
+    </div>
+  </div>
+
+  <label>4. Script (Hindi Devanagari + English Words)</label>
+  <textarea id="scriptText" placeholder="क्या आपको पता है कि ये जो पूरी दुनिया है, चाहे वो एक doctor हो या एक science lab हो..."></textarea>
+  <div class="counter" id="charCount">0 characters</div>
+
+  <button class="btn" id="genBtn" onclick="generateVoice()">✨ Generate Studio Voice</button>
+  <div class="status" id="statusMsg">⏳ Generating emotional voice... (Wait 10-20s)</div>
+
+  <div class="output-box" id="outputBox">
+    <label style="margin-top:0;">Generated Audio Preview:</label>
+    <audio id="audioPlayer" controls></audio>
+    <a id="downloadLink" class="download-btn" download="studio_voice.wav">⬇️ Download High-Quality WAV</a>
+  </div>
+</div>
+
+<script>
+  const apiKeyInput = document.getElementById('apiKey');
+  const scriptInput = document.getElementById('scriptText');
+  const charCount = document.getElementById('charCount');
+
+  // Load saved API key from phone browser
+  if (localStorage.getItem('gemini_tts_key')) {
+    apiKeyInput.value = localStorage.getItem('gemini_tts_key');
+  }
+  apiKeyInput.addEventListener('input', () => {
+    localStorage.setItem('gemini_tts_key', apiKeyInput.value.trim());
+  });
+
+  scriptInput.addEventListener('input', () => {
+    charCount.innerText = `${scriptInput.value.length} characters`;
+  });
+
+  // Convert raw 24kHz 16-bit PCM to playable WAV file
+  function pcmToWav(pcmData, sampleRate = 24000) {
+    const numChannels = 1;
+    const bitsPerSample = 16;
+    const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+    const blockAlign = numChannels * (bitsPerSample / 8);
+    const wavBuffer = new ArrayBuffer(44 + pcmData.byteLength);
+    const view = new DataView(wavBuffer);
+
+    const writeString = (offset, str) => {
+      for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+    };
+
+    writeString(0, 'RIFF');
+    view.setUint32(4, 36 + pcmData.byteLength, true);
+    writeString(8, 'WAVE');
+    writeString(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, numChannels, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, byteRate, true);
+    view.setUint16(32, blockAlign, true);
+    view.setUint16(34, bitsPerSample, true);
+    writeString(36, 'data');
+    view.setUint32(40, pcmData.byteLength, true);
+
+    new Uint8Array(wavBuffer, 44).set(new Uint8Array(pcmData));
+    return new Blob([wavBuffer], { type: 'audio/wav' });
+  }
+
+  async function generateVoice() {
+    const key = apiKeyInput.value.trim();
+    const text = scriptInput.value.trim();
+    const voice = document.getElementById('voiceName').value;
+    const style = document.getElementById('emotionStyle').value;
+    const btn = document.getElementById('genBtn');
+    const status = document.getElementById('statusMsg');
+    const outBox = document.getElementById('outputBox');
+
+    if (!key) { alert('Age Google AI Studio API Key dao!'); return; }
+    if (!text) { alert('Age Script paste koro!'); return; }
+
+    btn.disabled = true;
+    status.style.display = 'block';
+    status.innerText = '⏳ AI voice generate hocche... (10-25 sec lagte pare)';
+    outBox.style.display = 'none';
+
+    const promptText = `Read the following script ${style}:\n\n${text}`;
+
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${key}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText }] }],
+            generationConfig: {
+              responseModalities: ['AUDIO'],
+              speechConfig: {
+                voiceConfig: {
+                  prebuiltVoiceConfig: { voiceName: voice }
+                }
+              }
+            }
+          })
+        }
+      );
+
+      const data = await response.json();
+      if (data.error) throw new Error(data.error.message);
+
+      const inlineData = data.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+      if (!inlineData || !inlineData.data) throw new Error('Audio data paoa jayni. Script ektu chhoto kore try koro.');
+
+      const binaryStr = atob(inlineData.data);
+      const len = binaryStr.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) bytes[i] = binaryStr.charCodeAt(i);
+
+      // Wrap raw PCM in WAV header so mobile browsers play & download it cleanly
+      const wavBlob = (bytes[0] === 82 && bytes[1] === 73) ? new Blob([bytes], { type: 'audio/wav' }) : pcmToWav(bytes.buffer, 24000);
+      const audioUrl = URL.createObjectURL(wavBlob);
+
+      document.getElementById('audioPlayer').src = audioUrl;
+      document.getElementById('downloadLink').href = audioUrl;
+      outBox.style.display = 'block';
+      status.style.display = 'none';
+    } catch (err) {
+      status.innerText = '❌ Error: ' + err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  }
+</script>
+
+</body>
+</html>
