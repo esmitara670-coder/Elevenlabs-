@@ -3,28 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Anime Story AI Voice Studio</title>
+  <title>Anime Story Voice Studio — Full Script Generator</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
     body {
-      background: #0b0b12;
-      color: #f1f1f6;
+      background: #0a0a10;
+      color: #f1f5f9;
       padding: 16px;
-      max-width: 720px;
+      max-width: 760px;
       margin: 0 auto;
       line-height: 1.5;
     }
     h1 {
-      font-size: 1.4rem;
+      font-size: 1.35rem;
       background: linear-gradient(90deg, #ff4d6d, #ffb703);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       margin-bottom: 4px;
     }
-    .subtitle { font-size: 0.85rem; color: #9ca3af; margin-bottom: 16px; }
+    .subtitle { font-size: 0.84rem; color: #94a3b8; margin-bottom: 14px; }
     .card {
-      background: #141422;
-      border: 1px solid #26263d;
+      background: #13131f;
+      border: 1px solid #252538;
       border-radius: 12px;
       padding: 14px;
       margin-bottom: 14px;
@@ -32,270 +32,311 @@
     label { display: block; font-size: 0.82rem; color: #cbd5e1; margin-bottom: 6px; font-weight: 600; }
     input, select, textarea {
       width: 100%;
-      background: #0d0d17;
-      border: 1px solid #2e2e4a;
+      background: #0b0b14;
+      border: 1px solid #2c2c44;
       color: #fff;
       padding: 10px 12px;
       border-radius: 8px;
-      font-size: 0.92rem;
+      font-size: 0.9rem;
       margin-bottom: 10px;
     }
+    textarea { font-family: inherit; line-height: 1.55; resize: vertical; }
     input:focus, select:focus, textarea:focus { outline: none; border-color: #ff4d6d; }
-    .row { display: flex; gap: 10px; }
+    .tags-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .tag-chip {
+      background: #1e1e32;
+      border: 1px solid #343454;
+      color: #e2e8f0;
+      font-size: 0.76rem;
+      padding: 4px 9px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .tag-chip:hover { border-color: #ffb703; color: #ffb703; }
+    .row { display: flex; gap: 10px; align-items: center; }
     .row > div { flex: 1; }
     button {
       background: linear-gradient(135deg, #e63946, #b5179e);
       color: #fff;
       border: none;
-      padding: 11px 16px;
+      padding: 12px 16px;
       border-radius: 8px;
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.92rem;
       cursor: pointer;
       width: 100%;
-      transition: opacity 0.2s;
     }
-    button:hover { opacity: 0.92; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-secondary {
-      background: #23233b;
-      border: 1px solid #38385c;
+    .btn-small {
+      width: auto;
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      background: #222238;
+      border: 1px solid #38385a;
+    }
+    .btn-clear {
+      width: auto;
+      padding: 5px 10px;
+      font-size: 0.76rem;
+      background: #261620;
+      border: 1px solid #59253a;
+      color: #fda4af;
+    }
+    .progress-wrap {
+      display: none;
+      margin-top: 10px;
+      background: #0b0b14;
+      border-radius: 8px;
+      padding: 10px;
+      border: 1px solid #252538;
+    }
+    .progress-bar-bg {
+      height: 8px;
+      background: #1e1e30;
+      border-radius: 99px;
+      overflow: hidden;
       margin-top: 6px;
     }
-    .scene-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ff4d6d, #ffb703);
+      transition: width 0.25s;
     }
-    .badge {
-      font-size: 0.75rem;
-      padding: 3px 8px;
-      border-radius: 20px;
-      background: #25253e;
-      color: #ffb703;
-      font-weight: 600;
+    .master-box {
+      display: none;
+      background: linear-gradient(145deg, #161829, #1b1326);
+      border: 1px solid #ff4d6d66;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
     }
-    .audio-box {
-      margin-top: 10px;
-      background: #0d0d17;
+    audio { width: 100%; height: 40px; margin: 8px 0; }
+    .download-btn {
+      display: inline-block;
+      text-align: center;
+      width: 100%;
+      background: #16a34a;
+      color: #fff;
+      text-decoration: none;
       padding: 10px;
       border-radius: 8px;
-      border: 1px solid #26263d;
-      display: none;
+      font-weight: 700;
+      font-size: 0.9rem;
     }
-    audio { width: 100%; height: 38px; margin-bottom: 6px; }
-    .meta-row {
+    .line-item {
+      background: #0e0e18;
+      border: 1px solid #232336;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 8px;
+    }
+    .line-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.82rem;
+      margin-bottom: 6px;
+      gap: 6px;
+    }
+    .char-badge {
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 5px;
+      background: #23233b;
+      color: #ffb703;
+    }
+    .flow-badge {
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 5px;
+      background: #0f2942;
       color: #38bdf8;
     }
-    .download-link {
-      color: #4ade80;
-      text-decoration: none;
-      font-weight: 600;
-      background: #132a1c;
-      padding: 4px 10px;
-      border-radius: 6px;
-    }
-    .status { font-size: 0.82rem; color: #f87171; margin-top: 6px; }
-    .section-title { font-size: 1.05rem; margin: 18px 0 10px; color: #e2e8f0; }
+    .error-msg { color: #f87171; font-size: 0.84rem; margin-top: 8px; }
   </style>
 </head>
 <body>
 
-  <h1>Anime Voice Studio (Gemini AI)</h1>
-  <p class="subtitle">Dark Fantasy & Manhwa Character Dubbing Generator</p>
+  <h1>Anime Full-Story Voice Studio</h1>
+  <p class="subtitle">Paste full multi-character script & generate complete story audio in 1 click</p>
 
-  <!-- API Key Section -->
+  <!-- API Key -->
   <div class="card">
     <label for="apiKey">Google AI Studio API Key</label>
     <input type="password" id="apiKey" placeholder="AIzaSy..." />
-    <p style="font-size: 0.76rem; color: #94a3b8;">Key tomar browser-ei safe thakbe, bar bar dite hobe na.</p>
   </div>
 
-  <!-- Custom Voice Generator -->
+  <!-- Full Script Box -->
   <div class="card">
-    <h3 style="font-size: 0.98rem; margin-bottom: 10px; color: #ffb703;">Custom Dialogue Generator</h3>
-    <div class="row">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+      <label style="margin:0;">Full Story Script (Tap tag to insert)</label>
+      <button type="button" class="btn-clear" onclick="clearScript()">Clear Script</button>
+    </div>
+
+    <div class="tags-bar">
+      <span class="tag-chip" onclick="insertTag('[Hero]: ')">+ [Hero]</span>
+      <span class="tag-chip" onclick="insertTag('[Hero_Dark]: ')">+ [Hero_Dark]</span>
+      <span class="tag-chip" onclick="insertTag('[Villain]: ')">+ [Villain]</span>
+      <span class="tag-chip" onclick="insertTag('[Girl]: ')">+ [Girl]</span>
+      <span class="tag-chip" onclick="insertTag('[King]: ')">+ [King]</span>
+    </div>
+
+    <textarea id="fullScript" rows="11" placeholder="[Hero]: अपना dialogue यहाँ लिखें...&#10;[Villain]: दूसरा dialogue यहाँ..."></textarea>
+
+    <div class="row" style="margin-bottom: 10px;">
       <div>
-        <label for="customPreset">Character Preset</label>
-        <select id="customPreset">
-          <option value="hero_calm">Hero (Deep & Calm Narrator - Charon)</option>
-          <option value="hero_awakening">Hero Awakening (Cold & Intense - Charon)</option>
-          <option value="villain">Royal Villain (Arrogant & Mocking - Fenrir)</option>
-          <option value="girl">Popular Girl (Graceful & Confident - Kore)</option>
-          <option value="deep_king">Dark Sovereign (Heavy Bass - Orus)</option>
+        <label for="pauseGap">Gap Between Scenes (Seconds)</label>
+        <select id="pauseGap" style="margin:0;" onchange="rebuildMasterAudio()">
+          <option value="0.2">0.2s (Fast Action)</option>
+          <option value="0.4" selected>0.4s (Natural Anime Pace)</option>
+          <option value="0.7">0.7s (Dramatic Pause)</option>
+          <option value="1.0">1.0s (Long Pause)</option>
         </select>
       </div>
     </div>
-    <label for="customText">Dialogue (Hindi + English)</label>
-    <textarea id="customText" rows="3" placeholder="यहाँ अपना dialogue लिखें..."></textarea>
-    <button id="customBtn" onclick="generateCustom()">Generate Custom Voice</button>
-    <div id="customStatus" class="status"></div>
-    <div id="customAudioBox" class="audio-box">
-      <audio id="customAudio" controls></audio>
-      <div class="meta-row">
-        <span id="customDuration">Duration: --</span>
-        <a id="customDownload" class="download-link" download="custom_voice.wav">Download WAV</a>
+
+    <button id="generateAllBtn" onclick="generateFullStory()">Generate Full Story Audio (1-Click)</button>
+
+    <div id="progressWrap" class="progress-wrap">
+      <div style="display:flex; justify-content:space-between; font-size:0.82rem; color:#cbd5e1;">
+        <span id="progressText">Preparing...</span>
+        <span id="progressCount">0/0</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div id="progressFill" class="progress-bar-fill"></div>
       </div>
     </div>
+    <div id="mainError" class="error-msg"></div>
   </div>
 
-  <!-- Pre-loaded 8 Scenes -->
-  <h2 class="section-title">Pre-Loaded Story Scenes (Flow Timing Ready)</h2>
-  <div id="scenesContainer"></div>
+  <!-- Master Combined Output -->
+  <div id="masterBox" class="master-box">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <strong style="color:#ffb703; font-size:1rem;">Full Story Master Audio</strong>
+      <span id="totalDurationBadge" class="flow-badge">Total: 0.0s</span>
+    </div>
+    <audio id="masterAudio" controls></audio>
+    <a id="masterDownload" class="download-btn" download="full_anime_story.wav">Download Complete Story (.WAV)</a>
+  </div>
+
+  <!-- Scene Breakdown List -->
+  <div id="breakdownSection" style="display:none;">
+    <h3 style="font-size:0.98rem; color:#e2e8f0; margin-bottom:8px;">Scene-by-Scene Timing & Redo</h3>
+    <div id="linesContainer"></div>
+  </div>
 
   <script>
-    const PRESETS = {
-      hero_calm: {
+    const CHARACTERS = {
+      hero: {
+        label: "Hero (Calm Narrator)",
         voice: "Charon",
         style: "Speak in a deep, calm, mysterious anime protagonist voice with natural Hindi-English pronunciation and dramatic pauses"
       },
-      hero_awakening: {
+      hero_dark: {
+        label: "Hero Awakening (Cold & Intense)",
         voice: "Charon",
-        style: "Speak in a dark, cold, intimidating, powerful anime awakening tone with deep bass and dramatic intensity"
+        style: "Speak in a dark, cold, intimidating, powerful anime awakening tone with deep bass and intense emotion"
       },
       villain: {
+        label: "Royal Villain (Arrogant)",
         voice: "Fenrir",
-        style: "Speak in an arrogant, proud, mocking noble villain anime tone, expressive and sharp"
+        style: "Speak in an arrogant, proud, mocking noble anime villain tone, sharp and expressive"
       },
       girl: {
+        label: "Popular Girl (Graceful)",
         voice: "Kore",
         style: "Speak in a soft, graceful, confident anime heroine female voice, emotional yet firm"
       },
-      deep_king: {
+      king: {
+        label: "Dark Sovereign / System",
         voice: "Orus",
         style: "Speak in a heavy, authoritative, commanding dark fantasy voice"
       }
     };
 
-    const STORY_SCENES = [
-      {
-        id: 1,
-        title: "Scene 1 — World Intro",
-        target: "Flow: 6s",
-        preset: "hero_calm",
-        text: "इस दुनिया में हर किसी के पास कोई न कोई power है... सिवाए मेरे। सबको लगता है मैं एक 'Powerless' loser हूँ।"
-      },
-      {
-        id: 2,
-        title: "Scene 2 — Royal Student Mockery",
-        target: "Flow: 8s",
-        preset: "villain",
-        text: "हाहा! देखो तो, royal academy में एक zero-mana कचरा आ गया! पक्का इसके पास कोई बेकार सी power होगी!"
-      },
-      {
-        id: 3,
-        title: "Scene 3 — Popular Girl Reply",
-        target: "Flow: 8s",
-        preset: "girl",
-        text: "बस करो! सिर्फ power किसी की औकात decide नहीं करती। कभी-कभी सबसे शांत इंसान के अंदर ही सबसे बड़ा तूफ़ान होता है।"
-      },
-      {
-        id: 4,
-        title: "Scene 4 — Villain Furious",
-        target: "Flow: 6s",
-        preset: "villain",
-        text: "तुम इस loser के लिए मुझसे लड़ोगी?! आज मैं सबके सामने इसकी असलियत दिखाऊँगा!"
-      },
-      {
-        id: 5,
-        title: "Scene 5 — S-Rank Attack",
-        target: "Flow: 4s",
-        preset: "hero_calm",
-        text: "उसने अपना S-Rank attack सीधा मुझ पर छोड़ दिया!"
-      },
-      {
-        id: 6,
-        title: "Scene 6A — Girl Warning",
-        target: "Flow: 8s (Part A)",
-        preset: "girl",
-        text: "हटो वहाँ से!"
-      },
-      {
-        id: 7,
-        title: "Scene 6B — Seal Breaks",
-        target: "Flow: 8s (Part B)",
-        preset: "hero_calm",
-        text: "वो मुझे बचाने आगे बढ़ी... लेकिन तभी मेरे अंदर का seal टूट गया।"
-      },
-      {
-        id: 8,
-        title: "Scene 7 — Power Awakening (Climax)",
-        target: "Flow: 10s",
-        preset: "hero_awakening",
-        text: "मैंने अपनी power छुपा कर रखी थी, क्योंकि अगर ये बाहर आई... तो पूरी academy राख हो जाएगी!"
-      },
-      {
-        id: 9,
-        title: "Scene 8 — Cliffhanger Ending",
-        target: "Flow: 6s",
-        preset: "hero_awakening",
-        text: "अब तुम्हारी बारी है..."
-      }
-    ];
+    const SAMPLE_SCRIPT = `[Hero]: इस दुनिया में हर किसी के पास कोई न कोई power है... सिवाए मेरे। सबको लगता है मैं एक 'Powerless' loser हूँ।
+[Villain]: हाहा! देखो तो, royal academy में एक zero-mana कचरा आ गया! पक्का इसके पास कोई बेकार सी power होगी!
+[Girl]: बस करो! सिर्फ power किसी की औकात decide नहीं करती। कभी-कभी सबसे शांत इंसान के अंदर ही सबसे बड़ा तूफ़ान होता है।
+[Villain]: तुम इस loser के लिए मुझसे लड़ोगी?! आज मैं सबके सामने इसकी असलियत दिखाऊँगा!
+[Hero]: उसने अपना S-Rank attack सीधा मुझ पर छोड़ दिया!
+[Girl]: हटो वहाँ से!
+[Hero]: वो मुझे बचाने आगे बढ़ी... लेकिन तभी मेरे अंदर का seal टूट गया।
+[Hero_Dark]: मैंने अपनी power छुपा कर रखी थी, क्योंकि अगर ये बाहर आई... तो पूरी academy राख हो जाएगी!
+[Hero_Dark]: अब तुम्हारी बारी है...`;
 
-    // Load saved API key
     const apiKeyInput = document.getElementById("apiKey");
+    const scriptBox = document.getElementById("fullScript");
+    let generatedItems = [];
+
     try {
       const savedKey = localStorage.getItem("gemini_tts_api_key");
       if (savedKey) apiKeyInput.value = savedKey;
       apiKeyInput.addEventListener("input", () => {
         localStorage.setItem("gemini_tts_api_key", apiKeyInput.value.trim());
       });
-    } catch (e) {}
 
-    // Render Scene Cards
-    const container = document.getElementById("scenesContainer");
-    STORY_SCENES.forEach((s) => {
-      const div = document.createElement("div");
-      div.className = "card";
-      div.innerHTML = `
-        <div class="scene-header">
-          <strong style="font-size: 0.92rem; color: #f8fafc;">${s.title}</strong>
-          <span class="badge">${s.target}</span>
-        </div>
-        <select id="preset-${s.id}">
-          <option value="hero_calm" ${s.preset === "hero_calm" ? "selected" : ""}>Hero (Deep & Calm - Charon)</option>
-          <option value="hero_awakening" ${s.preset === "hero_awakening" ? "selected" : ""}>Hero Awakening (Cold & Intense - Charon)</option>
-          <option value="villain" ${s.preset === "villain" ? "selected" : ""}>Royal Villain (Arrogant - Fenrir)</option>
-          <option value="girl" ${s.preset === "girl" ? "selected" : ""}>Popular Girl (Graceful - Kore)</option>
-          <option value="deep_king" ${s.preset === "deep_king" ? "selected" : ""}>Dark Sovereign (Heavy Bass - Orus)</option>
-        </select>
-        <textarea id="text-${s.id}" rows="2">${s.text}</textarea>
-        <button id="btn-${s.id}" onclick="generateScene(${s.id})">Generate Voice</button>
-        <div id="status-${s.id}" class="status"></div>
-        <div id="box-${s.id}" class="audio-box">
-          <audio id="audio-${s.id}" controls></audio>
-          <div class="meta-row">
-            <span id="dur-${s.id}">Duration: --</span>
-            <a id="dl-${s.id}" class="download-link" download="scene_${s.id}.wav">Download WAV</a>
-          </div>
-        </div>
-      `;
-      container.appendChild(div);
-    });
+      const savedScript = localStorage.getItem("gemini_saved_script");
+      scriptBox.value = savedScript ? savedScript : SAMPLE_SCRIPT;
+      scriptBox.addEventListener("input", () => {
+        localStorage.setItem("gemini_saved_script", scriptBox.value);
+      });
+    } catch (e) {
+      scriptBox.value = SAMPLE_SCRIPT;
+    }
 
-    function pcmToWavBlob(base64Data, sampleRate = 24000) {
-      const binaryStr = atob(base64Data);
-      const pcmLen = binaryStr.length;
+    function clearScript() {
+      scriptBox.value = "";
+      localStorage.removeItem("gemini_saved_script");
+      scriptBox.focus();
+    }
+
+    function insertTag(tag) {
+      const start = scriptBox.selectionStart;
+      const end = scriptBox.selectionEnd;
+      const val = scriptBox.value;
+      const prefix = (start > 0 && val[start - 1] !== "\n") ? "\n" : "";
+      scriptBox.value = val.substring(0, start) + prefix + tag + val.substring(end);
+      scriptBox.focus();
+      const cursor = start + prefix.length + tag.length;
+      scriptBox.setSelectionRange(cursor, cursor);
+    }
+
+    function parseScript(rawText) {
+      const lines = rawText.split("\n").map(l => l.trim()).filter(Boolean);
+      const parsed = [];
+      for (const line of lines) {
+        const match = line.match(/^\[([a-zA-Z0-9_]+)\]\s*:\s*(.+)$/);
+        if (match) {
+          const rawKey = match[1].toLowerCase();
+          const key = CHARACTERS[rawKey] ? rawKey : "hero";
+          parsed.push({ charKey: key, text: match[2].trim() });
+        } else {
+          parsed.push({ charKey: "hero", text: line });
+        }
+      }
+      return parsed;
+    }
+
+    function pcmBytesToWavBlob(pcmBytes, sampleRate = 24000) {
+      const pcmLen = pcmBytes.length;
       const wavBuffer = new ArrayBuffer(44 + pcmLen);
       const view = new DataView(wavBuffer);
-
-      function writeStr(offset, str) {
-        for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
-      }
+      const writeStr = (off, s) => { for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i)); };
 
       writeStr(0, "RIFF");
       view.setUint32(4, 36 + pcmLen, true);
       writeStr(8, "WAVE");
       writeStr(12, "fmt ");
       view.setUint32(16, 16, true);
-      view.setUint16(20, 1, true); // PCM
-      view.setUint16(22, 1, true); // Mono
+      view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true);
       view.setUint32(24, sampleRate, true);
       view.setUint32(28, sampleRate * 2, true);
       view.setUint16(32, 2, true);
@@ -303,126 +344,200 @@
       writeStr(36, "data");
       view.setUint32(40, pcmLen, true);
 
-      const bytes = new Uint8Array(wavBuffer, 44);
-      for (let i = 0; i < pcmLen; i++) bytes[i] = binaryStr.charCodeAt(i);
-
+      new Uint8Array(wavBuffer, 44).set(pcmBytes);
       return new Blob([wavBuffer], { type: "audio/wav" });
     }
 
-    async function callGeminiTTS(apiKey, presetKey, dialogueText) {
-      const preset = PRESETS[presetKey];
-      const prompt = `${preset.style}: "${dialogueText}"`;
+    function recommendFlowSlot(sec) {
+      if (sec <= 4.3) return "Flow: 4s";
+      if (sec <= 6.3) return "Flow: 6s";
+      if (sec <= 8.3) return "Flow: 8s";
+      return "Flow: 10s";
+    }
 
+    async function fetchLinePCM(apiKey, charKey, dialogueText) {
+      const charObj = CHARACTERS[charKey] || CHARACTERS.hero;
+      const prompt = `${charObj.style}: "${dialogueText}"`;
       const models = ["gemini-2.5-flash-preview-tts", "gemini-2.5-flash"];
-      let lastError = "";
+      let lastErr = "";
 
       for (const model of models) {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
-        const payload = {
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            responseModalities: ["AUDIO"],
-            speechConfig: {
-              voiceConfig: {
-                prebuiltVoiceConfig: {
-                  voiceName: preset.voice
-                }
-              }
-            }
-          }
-        };
-
         const res = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              responseModalities: ["AUDIO"],
+              speechConfig: {
+                voiceConfig: { prebuiltVoiceConfig: { voiceName: charObj.voice } }
+              }
+            }
+          })
         });
-
         const data = await res.json();
         if (!res.ok) {
-          lastError = data?.error?.message || `HTTP ${res.status}`;
+          lastErr = data?.error?.message || `HTTP ${res.status}`;
           continue;
         }
-
         const part = data?.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
-        if (part && part.inlineData?.data) {
-          const mime = part.inlineData.mimeType || "";
-          if (mime.includes("wav") || mime.includes("mp3") || mime.includes("ogg")) {
-            const bin = atob(part.inlineData.data);
-            const arr = new Uint8Array(bin.length);
-            for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-            return new Blob([arr], { type: mime });
-          } else {
-            const rateMatch = mime.match(/rate=(\d+)/);
-            const sampleRate = rateMatch ? parseInt(rateMatch[1], 10) : 24000;
-            return pcmToWavBlob(part.inlineData.data, sampleRate);
+        if (part?.inlineData?.data) {
+          const bin = atob(part.inlineData.data);
+          let bytes = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+          // Strip 44-byte header if WAV returned, else raw 24kHz PCM
+          if (bytes.length > 44 && bin.startsWith("RIFF")) {
+            bytes = bytes.slice(44);
           }
+          // Ensure even byte alignment for 16-bit PCM
+          if (bytes.length % 2 !== 0) bytes = bytes.slice(0, bytes.length - 1);
+          return bytes;
         }
-        lastError = "No audio returned from model.";
+        lastErr = "No audio returned.";
       }
-      throw new Error(lastError);
+      throw new Error(lastErr);
     }
 
-    async function runGeneration(btnEl, statusEl, boxEl, audioEl, durEl, dlEl, presetKey, text) {
+    function rebuildMasterAudio() {
+      if (!generatedItems.length) return;
+      const sampleRate = 24000;
+      const gapSec = parseFloat(document.getElementById("pauseGap").value) || 0.4;
+      const silenceSamples = Math.round(gapSec * sampleRate);
+      const silenceBytes = new Uint8Array(silenceSamples * 2);
+
+      let totalBytes = 0;
+      generatedItems.forEach((item, idx) => {
+        totalBytes += item.pcm.length;
+        if (idx < generatedItems.length - 1) totalBytes += silenceBytes.length;
+      });
+
+      const combined = new Uint8Array(totalBytes);
+      let offset = 0;
+      generatedItems.forEach((item, idx) => {
+        combined.set(item.pcm, offset);
+        offset += item.pcm.length;
+        if (idx < generatedItems.length - 1) {
+          combined.set(silenceBytes, offset);
+          offset += silenceBytes.length;
+        }
+      });
+
+      const masterBlob = pcmBytesToWavBlob(combined, sampleRate);
+      const masterUrl = URL.createObjectURL(masterBlob);
+      document.getElementById("masterAudio").src = masterUrl;
+      document.getElementById("masterDownload").href = masterUrl;
+
+      const totalSec = totalBytes / (sampleRate * 2);
+      document.getElementById("totalDurationBadge").textContent = `Total: ${totalSec.toFixed(1)}s`;
+      document.getElementById("masterBox").style.display = "block";
+    }
+
+    function renderBreakdown() {
+      const container = document.getElementById("linesContainer");
+      container.innerHTML = "";
+      generatedItems.forEach((item, idx) => {
+        const blob = pcmBytesToWavBlob(item.pcm, 24000);
+        const url = URL.createObjectURL(blob);
+        const charObj = CHARACTERS[item.charKey];
+        const div = document.createElement("div");
+        div.className = "line-item";
+        div.innerHTML = `
+          <div class="line-top">
+            <span class="char-badge">#${idx + 1} • ${charObj.label}</span>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <span class="flow-badge">${item.duration.toFixed(1)}s (${recommendFlowSlot(item.duration)})</span>
+              <button type="button" class="btn-small" id="redo-${idx}" onclick="redoLine(${idx})">Redo</button>
+            </div>
+          </div>
+          <p style="font-size:0.84rem; color:#cbd5e1; margin-bottom:6px;">${item.text}</p>
+          <audio src="${url}" controls style="height:34px; margin:0;"></audio>
+        `;
+        container.appendChild(div);
+      });
+      document.getElementById("breakdownSection").style.display = "block";
+    }
+
+    async function generateFullStory() {
       const apiKey = apiKeyInput.value.trim();
+      const errEl = document.getElementById("mainError");
+      errEl.textContent = "";
+
       if (!apiKey) {
-        statusEl.textContent = "Prothome upore Google AI Studio API Key dao!";
-        return;
-      }
-      if (!text.trim()) {
-        statusEl.textContent = "Dialogue khali rakha jabe na!";
+        errEl.textContent = "Prothome upore Google AI Studio API Key dao!";
         return;
       }
 
-      btnEl.disabled = true;
-      btnEl.textContent = "Generating...";
-      statusEl.textContent = "";
+      const items = parseScript(scriptBox.value);
+      if (!items.length) {
+        errEl.textContent = "Script box khali! Age script paste koro.";
+        return;
+      }
+
+      const btn = document.getElementById("generateAllBtn");
+      const progWrap = document.getElementById("progressWrap");
+      const progText = document.getElementById("progressText");
+      const progCount = document.getElementById("progressCount");
+      const progFill = document.getElementById("progressFill");
+
+      btn.disabled = true;
+      btn.textContent = "Generating Full Story...";
+      progWrap.style.display = "block";
+      generatedItems = [];
 
       try {
-        const blob = await callGeminiTTS(apiKey, presetKey, text.trim());
-        const url = URL.createObjectURL(blob);
-        audioEl.src = url;
-        dlEl.href = url;
-        boxEl.style.display = "block";
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          progText.textContent = `Generating: ${CHARACTERS[item.charKey].label}...`;
+          progCount.textContent = `${i + 1}/${items.length}`;
+          progFill.style.width = `${Math.round(((i) / items.length) * 100)}%`;
 
-        audioEl.onloadedmetadata = () => {
-          durEl.textContent = `Exact Duration: ${audioEl.duration.toFixed(1)}s`;
-        };
-        audioEl.play().catch(() => {});
+          const pcm = await fetchLinePCM(apiKey, item.charKey, item.text);
+          const duration = pcm.length / (24000 * 2);
+          generatedItems.push({ ...item, pcm, duration });
+
+          progFill.style.width = `${Math.round(((i + 1) / items.length) * 100)}%`;
+          if (i < items.length - 1) await new Promise(r => setTimeout(r, 350));
+        }
+
+        progText.textContent = "Stitching complete story audio...";
+        rebuildMasterAudio();
+        renderBreakdown();
+        progWrap.style.display = "none";
       } catch (err) {
-        statusEl.textContent = "Error: " + err.message;
+        errEl.textContent = "Error: " + err.message;
+        if (generatedItems.length > 0) {
+          rebuildMasterAudio();
+          renderBreakdown();
+        }
       } finally {
-        btnEl.disabled = false;
-        btnEl.textContent = "Generate Voice";
+        btn.disabled = false;
+        btn.textContent = "Generate Full Story Audio (1-Click)";
       }
     }
 
-    function generateScene(id) {
-      runGeneration(
-        document.getElementById(`btn-${id}`),
-        document.getElementById(`status-${id}`),
-        document.getElementById(`box-${id}`),
-        document.getElementById(`audio-${id}`),
-        document.getElementById(`dur-${id}`),
-        document.getElementById(`dl-${id}`),
-        document.getElementById(`preset-${id}`).value,
-        document.getElementById(`text-${id}`).value
-      );
-    }
+    async function redoLine(idx) {
+      const apiKey = apiKeyInput.value.trim();
+      const redoBtn = document.getElementById(`redo-${idx}`);
+      const errEl = document.getElementById("mainError");
+      errEl.textContent = "";
+      redoBtn.disabled = true;
+      redoBtn.textContent = "...";
 
-    function generateCustom() {
-      runGeneration(
-        document.getElementById("customBtn"),
-        document.getElementById("customStatus"),
-        document.getElementById("customAudioBox"),
-        document.getElementById("customAudio"),
-        document.getElementById("customDuration"),
-        document.getElementById("customDownload"),
-        document.getElementById("customPreset").value,
-        document.getElementById("customText").value
-      );
+      try {
+        const item = generatedItems[idx];
+        const pcm = await fetchLinePCM(apiKey, item.charKey, item.text);
+        const duration = pcm.length / (24000 * 2);
+        generatedItems[idx] = { ...item, pcm, duration };
+        rebuildMasterAudio();
+        renderBreakdown();
+      } catch (err) {
+        errEl.textContent = `Line #${idx + 1} Redo Error: ` + err.message;
+        redoBtn.disabled = false;
+        redoBtn.textContent = "Redo";
+      }
     }
   </script>
 </body>
-          </html>
+  </html>
 
